@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ip-verify-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ip-verify
+  template:
+    metadata:
+      labels:
+        app: ip-verify
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
