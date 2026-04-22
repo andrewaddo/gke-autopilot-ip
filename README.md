@@ -166,9 +166,11 @@ kubectl apply -f workloads.yaml
 
 This "slicing" behavior allows for high IP efficiency while maintaining the management simplicity of Autopilot.
 
+> **Comparison Note:** In our first test using a large **/21** range (2,048 IPs), we observed these different slices (a `/24` and several `/27`s) coexisting successfully. The cluster was able to scale up multiple nodes of varying densities because the overall pool was large enough to accommodate the reservations.
+
 ## IP Exhaustion Experiment
 
-A test was conducted to observe the behavior of Autopilot when restricted to the minimum allowed Pod secondary range of `/24` (256 IPs).
+A second test was conducted to observe the behavior of Autopilot when restricted to the minimum allowed Pod secondary range of `/24` (256 IPs).
 
 ### 1. Setup
 *   **Secondary Range:** `podsmall` (`10.102.192.0/24`).
