@@ -70,7 +70,9 @@ In Autopilot, the "Nodes" tab is often hidden from the standard GUI navigation. 
 ## Advanced: Heterogeneous IP Reservation
 By using a `ComputeClass`, you can mix nodes with different Pod densities in the same cluster.
 
-### 1. Create Compute Classes
+### 1. Create and Apply Compute Classes
+Define classes with different `maxPodsPerNode` values in a file named `compute-classes.yaml`:
+
 ```yaml
 apiVersion: cloud.google.com/v1
 kind: ComputeClass
@@ -82,9 +84,83 @@ spec:
   priorities:
   - maxPodsPerNode: 16
     machineFamily: e2
+---
+apiVersion: cloud.google.com/v1
+kind: ComputeClass
+metadata:
+  name: high-density
+spec:
+  autopilot:
+    enabled: true
+  priorities:
+  - maxPodsPerNode: 128
+    machineFamily: e2
 ```
 
-### 2. Verify Dynamic Slicing Results
+Apply them to the cluster:
+```bash
+kubectl apply -f compute-classes.yaml
+```
+
+### 2. Deploy Workloads
+Target the classes using the `nodeSelector` in a file named `workloads.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-low-density
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: low-density
+  template:
+    metadata:
+      labels:
+        app: low-density
+    spec:
+      nodeSelector:
+        cloud.google.com/compute-class: low-density
+      containers:
+      - name: nginx
+        image: nginx:latest
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-high-density
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: high-density
+  template:
+    metadata:
+      labels:
+        app: high-density
+    spec:
+      nodeSelector:
+        cloud.google.com/compute-class: high-density
+      containers:
+      - name: nginx
+        image: nginx:latest
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+```
+
+Apply the workloads:
+```bash
+kubectl apply -f workloads.yaml
+```
+
+### 3. Verify Dynamic Slicing Results
 *   **Low-Density (16 Pods):** Reserves a **/27** (32 IPs).
 *   **Default/High-Density:** Reserves a **/24** (256 IPs).
 
