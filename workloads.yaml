@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-low-density
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: low-density
+  template:
+    metadata:
+      labels:
+        app: low-density
+    spec:
+      nodeSelector:
+        cloud.google.com/compute-class: low-density
+      containers:
+      - name: nginx
+        image: nginx:latest
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-high-density
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: high-density
+  template:
+    metadata:
+      labels:
+        app: high-density
+    spec:
+      nodeSelector:
+        cloud.google.com/compute-class: high-density
+      containers:
+      - name: nginx
+        image: nginx:latest
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"

@@ -1,0 +1,21 @@
+apiVersion: cloud.google.com/v1
+kind: ComputeClass
+metadata:
+  name: low-density
+spec:
+  autopilot:
+    enabled: true
+  priorities:
+  - maxPodsPerNode: 16
+    machineFamily: e2
+---
+apiVersion: cloud.google.com/v1
+kind: ComputeClass
+metadata:
+  name: high-density
+spec:
+  autopilot:
+    enabled: true
+  priorities:
+  - maxPodsPerNode: 128
+    machineFamily: e2
