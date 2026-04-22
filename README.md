@@ -168,6 +168,23 @@ This "slicing" behavior allows for high IP efficiency while maintaining the mana
 
 > **Comparison Note:** In our first test using a large **/21** range (2,048 IPs), we observed these different slices (a `/24` and several `/27`s) coexisting successfully. The cluster was able to scale up multiple nodes of varying densities because the overall pool was large enough to accommodate the reservations.
 
+## Billing Implications
+
+Using custom `ComputeClass` resources changes how you are billed for your Autopilot workloads.
+
+### 1. From Pod-based to Node-based
+*   **Default Autopilot:** You are billed per-Pod based on your resource requests (vCPU, Memory, Storage).
+*   **Custom ComputeClass:** Using a custom `ComputeClass` (e.g. to specify `machineFamily` or `maxPodsPerNode`) shifts the billing to a **Node-based model**.
+
+### 2. What you pay for
+In the Node-based model, you are charged for:
+1.  The **entire underlying Compute Engine VM** (at standard GCE rates).
+2.  An **Autopilot Management Premium** (a surcharge per vCPU and Memory).
+
+### 3. Cost Considerations
+*   **Utilization:** Since you pay for the full node, you should aim for high bin-packing efficiency. If you use a `low-density` class (e.g., `maxPodsPerNode: 16`) and only run a few small pods, you will still be billed for 100% of the node's capacity.
+*   **Exceptions:** Only the built-in `balanced` and `scale-out` compute classes (and the default Autopilot platform) maintain the standard Pod-based billing model.
+
 ## IP Exhaustion Experiment
 
 A second test was conducted to observe the behavior of Autopilot when restricted to the minimum allowed Pod secondary range of `/24` (256 IPs).
